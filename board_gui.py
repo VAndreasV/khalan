@@ -16,9 +16,17 @@ class StoreGUI(object):
                                 height=STORE_HEIGHT,
                                 bg=p.get_player_color(store.owner))
         self.button.grid(row=row_pos, column=col_pos, sticky=tk.W+tk.N)
+        if(store.owner == p.PlayerID.P2):
+            self.button.config(state=tk.DISABLED)
 
     def refresh(self):
         self.button.config(text=self.store.stones)
+
+    def enable(self, enable):
+        if(enable):
+            self.button.config(state=tk.NORMAL)
+        else:
+            self.button.config(state=tk.DISABLED)
 
 
 class BaseGUI(StoreGUI):
@@ -89,6 +97,9 @@ class BoardGUI(tk.Frame):
         current_pid = self.game.get_current_player()
         self.player_label.config(text=p.get_player_name(current_pid),
                                 bg=p.get_player_color(current_pid))
+
+        for store_id in range(self.board.nb_houses):
+            self.store_guis[store_id].enable(current_pid == p.PlayerID.P1)
 
     def end_game(self):
         score_p1 = self.board.get_player_score(p.PlayerID.P1)

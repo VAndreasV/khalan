@@ -2,8 +2,11 @@ import numpy as np
 import tkinter as tk
 from board import Board
 from board_gui import BoardGUI
+from board_state import BoardState
 from player import PlayerID as pid
 import player as p
+
+from mcts import MCTS
 
 class Game(object):
     def __init__(self, createGUI):
@@ -38,7 +41,8 @@ class Game(object):
         # this happens when we drop our last stone
         # in an empty store on our side
         if(last_store.owner == self.current_player and
-            last_store.stones == 1):
+            last_store.stones == 1 and
+            not last_store.is_base()):
             # Put last stone in our base
             last_store.empty()
             self.board.bonus_deposit(self.current_player, 1)
@@ -67,6 +71,14 @@ class Game(object):
                          len(possible_moves_p2) == 0)
         if(game_finished):
             self.end_game(possible_moves_p1, possible_moves_p2)
+            return
+
+        # let the bot play
+        if(self.current_player == pid.P2):
+            state = BoardState(self.board, self.current_player)
+            move = MCTS(state, 1000)
+            store = self.board.get_store(move)
+            self.act(store)
             
     def end_game(self, moves_p1, moves_p2):
         for store in moves_p1:
