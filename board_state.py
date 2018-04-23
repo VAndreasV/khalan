@@ -23,12 +23,13 @@ def get_opposite_id(store_id):
     return opposite_id
 
 def get_base_id(player_id):
-    return HOUSES if player_id == p.PlayerID.P1 else HOUSES*2 - 1
+    return HOUSES if player_id == p.PlayerID.P1 else HOUSES*2 + 1
 
 class BoardState():
     def __init__(self, board, next_player):
         self.next_player = next_player
         self.stores = []
+        self.stones_to_win = HOUSES * INIT_STONES
         if board:
             for store in board.stores:
                 self.stores.append(store.stones)
@@ -111,10 +112,26 @@ class BoardState():
                     moves.append(i)
         return moves
 
+    def winner_is_unclear(self):
+        '''
+        When a player has more than half the stones in the game collected
+        in his base, he wins, whatever play follows.
+        So we say the winner is unclear when none of the players has this amount 
+        collected
+        '''
+        p1_base = get_base_id(p.PlayerID.P1)
+        p1_score = self.stores[p1_base]
+        if(p1_score > self.stones_to_win):
+            return False
+        p2_base = get_base_id(p.PlayerID.P2)
+        p2_score = self.stores[p2_base]
+        return p2_score < self.stones_to_win
+
+
     def get_result(self, player):
         player_base = get_base_id(player)
         player_score = self.stores[player_base]
-        opp_base = p.get_other_player(player)
+        opp_base = get_base_id(p.get_other_player(player))
         opp_score = self.stores[opp_base]
         if player_score > opp_score:
             return 1.0
@@ -123,3 +140,21 @@ class BoardState():
         if self.get_moves() == []:
             return 0.5
         assert(False)
+
+    def get_winner_id(self):
+        p1_base = get_base_id(p.PlayerID.P1)
+        p1_score = self.stores[p1_base]
+        p2_base = get_base_id(p.PlayerID.P2)
+        p2_score = self.stores[p2_base]
+        if(p1_score == p2_score):
+            return None
+        elif(p1_score > p2_score):
+            return p.PlayerID.P1
+        return p.PlayerID.P2
+
+    def get_end_score_str(self):
+        p1_base = get_base_id(p.PlayerID.P1)
+        p1_score = self.stores[p1_base]
+        p2_base = get_base_id(p.PlayerID.P2)
+        p2_score = self.stores[p2_base]
+        return ('score P1: {}\nscore P2: {}'.format(p1_score, p2_score))

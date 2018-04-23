@@ -5,6 +5,7 @@ from board_gui import BoardGUI
 from board_state import BoardState
 from player import PlayerID as pid
 import player as p
+import time
 
 from mcts import MCTS
 
@@ -76,7 +77,7 @@ class Game(object):
         # let the bot play
         if(self.current_player == pid.P2):
             state = BoardState(self.board, self.current_player)
-            move = MCTS(state, 1000)
+            move = MCTS(state, 1000, pid.P2)
             store = self.board.get_store(move)
             self.act(store)
             
