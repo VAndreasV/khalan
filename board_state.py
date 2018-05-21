@@ -119,20 +119,16 @@ class BoardState():
         So we say the winner is unclear when none of the players has this amount 
         collected
         '''
-        p1_base = get_base_id(p.PlayerID.P1)
-        p1_score = self.stores[p1_base]
+        p1_score = self.get_score(p.PlayerID.P1)
         if(p1_score > self.stones_to_win):
             return False
-        p2_base = get_base_id(p.PlayerID.P2)
-        p2_score = self.stores[p2_base]
-        return p2_score < self.stones_to_win
+        p2_score = self.get_score(p.PlayerID.P2)
+        return p2_score <= self.stones_to_win
 
 
     def get_result(self, player):
-        player_base = get_base_id(player)
-        player_score = self.stores[player_base]
-        opp_base = get_base_id(p.get_other_player(player))
-        opp_score = self.stores[opp_base]
+        player_score = self.get_score(player)
+        opp_score = self.get_score(p.get_other_player(player))
         if player_score > opp_score:
             return 1.0
         elif opp_score > player_score:
@@ -141,11 +137,13 @@ class BoardState():
             return 0.5
         assert(False)
 
+    def get_score(self, player_id):
+        base = get_base_id(player_id)
+        return self.stores[base]
+
     def get_winner_id(self):
-        p1_base = get_base_id(p.PlayerID.P1)
-        p1_score = self.stores[p1_base]
-        p2_base = get_base_id(p.PlayerID.P2)
-        p2_score = self.stores[p2_base]
+        p1_score = self.get_score(p.PlayerID.P1)
+        p2_score = self.get_score(p.PlayerID.P2)
         if(p1_score == p2_score):
             return None
         elif(p1_score > p2_score):
@@ -153,8 +151,6 @@ class BoardState():
         return p.PlayerID.P2
 
     def get_end_score_str(self):
-        p1_base = get_base_id(p.PlayerID.P1)
-        p1_score = self.stores[p1_base]
-        p2_base = get_base_id(p.PlayerID.P2)
-        p2_score = self.stores[p2_base]
+        p1_score = self.get_score(p.PlayerID.P1)
+        p2_score = self.get_score(p.PlayerID.P2)
         return ('score P1: {}\nscore P2: {}'.format(p1_score, p2_score))

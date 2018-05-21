@@ -1,12 +1,11 @@
 import random
-from node import Node
 
-def MCTS(rootstate, itermax, player, node_conf):
+def MCRAVE(rootstate, itermax, player, node_class, node_conf):
     '''
     Do a tree search for maximumiterma iterations
     returning the best move
     '''
-    rootnode = Node(rootstate, node_conf, None, None, player)
+    rootnode = node_class(rootstate, node_conf, None, None, player)
 
     for _ in range(itermax):
         # start at root
@@ -27,13 +26,16 @@ def MCTS(rootstate, itermax, player, node_conf):
             state.do_move(m)
             node = node.add_child(m, state, player)
 
+        action_mask = 0
         # Rollout random play from this child node
         while state.get_moves() != [] and state.winner_is_unclear():
-            state.do_move(random.choice(state.get_moves()))
+            move = random.choice(state.get_moves())
+            action_mask |= (1 << move)
+            state.do_move(move)
 
         # Backpropagate the result
         while node != None:
-            node.update(state.get_result(node.player))
+            action_mask = node.update(state.get_result(node.player), action_mask)
             node = node.parent
 
     # Return best move
