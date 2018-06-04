@@ -23,6 +23,10 @@ class Node(object):
         self.untriedMoves = state.get_moves()
         self.player = player
 
+    def matches(self, state, conf):
+        return (state == self.state and
+                conf == self.conf)
+
     def get_key(self, c):
         return c.wins/c.visits + self.conf.UCBC * math.sqrt(2*math.log(self.visits)/c.visits)
 

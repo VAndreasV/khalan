@@ -4,6 +4,7 @@ used for MCTS
 '''
 import player as p
 from board import HOUSES, INIT_STONES
+import numpy as np
 
 def is_owner(store_id, player_id):
     return ((store_id <= HOUSES and player_id == p.PlayerID.P1) or
@@ -28,20 +29,27 @@ def get_base_id(player_id):
 class BoardState():
     def __init__(self, board, next_player):
         self.next_player = next_player
+        self.prev_player = None
         self.stores = []
         self.stones_to_win = HOUSES * INIT_STONES
         if board:
             for store in board.stores:
                 self.stores.append(store.stones)
 
+    def __eq__(self, other):
+        return (self.next_player == other.next_player and
+                self.stores == other.stores)
+
     def clone(self):
         st = BoardState(None, None)
+        st.prev_player = self.prev_player
         st.next_player = self.next_player
         st.stores = self.stores[:]
         return st
 
     def do_move(self, move):
         player = self.next_player
+        self.prev_player = player
         assert(is_owner(move, player))
         assert(not is_base(move))
         assert(self.stores[move] > 0)
@@ -154,3 +162,50 @@ class BoardState():
         p1_score = self.get_score(p.PlayerID.P1)
         p2_score = self.get_score(p.PlayerID.P2)
         return ('score P1: {}\nscore P2: {}'.format(p1_score, p2_score))
+
+    def get_expected_gain(self, move):
+        total_gain = 0
+        player = self.next_player
+        assert(is_owner(move, player))
+        assert(not is_base(move))
+        assert(self.stores[move] > 0)
+        stones = self.stores[move]
+        current_store = move
+        drop_ids = np.zeros(len(self.stores))
+        while stones > 0:
+            current_store = (current_store+1) % len(self.stores)
+            # don't drop in opponents base
+            if is_base(current_store):
+                if not is_owner(current_store, player):
+                    continue
+                else:
+                    total_gain += 1
+            # drop 1 in all others
+            drop_ids[current_store] += 1
+            stones -= 1
+
+        # Check for bonus: if we dropped one in one of our empty stores
+        if (is_owner(current_store, player) and
+            (self.stores[current_store] == 0) and
+            (not is_base(current_store))):
+            opp_id = get_opposite_id(current_store)
+            # increment total gain
+            total_gain += 1 # last dropped stone
+            total_gain += self.stores[opp_id] # opposite store bonus
+            total_gain += drop_ids[opp_id] # potential extra drop
+        return total_gain
+
+    def get_prevented_loss(self, move):
+        # See if the opposite store is empty
+        # = possible use for opponent bonus
+        opp_id = get_opposite_id(move)
+        if(self.stores[opp_id] == 0):
+            return self.stores[move]
+        return 0
+
+    def get_move_urgency(self, move):
+        # Capture escape = stones that can be captured by playing this move + 
+        #                  stones that we prevent from being captured by playing this move
+        expected_gain = self.get_expected_gain(move)
+        prevented_loss = self.get_prevented_loss(move)
+        return expected_gain + prevented_loss

@@ -1,6 +1,6 @@
 import random
 
-def MCRAVE(rootstate, itermax, player, node_class, node_conf):
+def MCRAVE(rootstate, itermax, player, node_class, node_conf, sim_pol):
     '''
     Do a tree search for maximumiterma iterations
     returning the best move
@@ -26,12 +26,9 @@ def MCRAVE(rootstate, itermax, player, node_class, node_conf):
             state.do_move(m)
             node = node.add_child(m, state, player)
 
-        action_mask = 0
         # Rollout random play from this child node
-        while state.get_moves() != [] and state.winner_is_unclear():
-            move = random.choice(state.get_moves())
-            action_mask |= (1 << move)
-            state.do_move(move)
+        rollout_p = sim_pol()
+        state, action_mask = rollout_p.rollout(state)
 
         # Backpropagate the result
         while node != None:
