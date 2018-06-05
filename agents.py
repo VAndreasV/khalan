@@ -11,6 +11,9 @@ from rollout_policy import get_sim_pol_class
 
 def make_agent(p_id, conf):
     agent_conf = conf.get_agent_conf(p_id)
+    return make_agent_from_config(agent_conf)
+
+def make_agent_from_config(agent_conf):
     agent_type = agent_conf.agent_type
     if agent_type == 'rnd':
         return RandomAgent(agent_conf)

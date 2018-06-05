@@ -6,14 +6,14 @@ from board_state import BoardState
 from player import PlayerID as pid
 import player as p
 import time
-
-from mcts import MCTS
+from agents import make_agent_from_config
 
 class Game(object):
-    def __init__(self, createGUI):
+    def __init__(self, createGUI, agent_conf):
         self.board = Board(self)
         self.current_player = pid.P1
         self.has_ended = False
+        self.agent = make_agent_from_config(agent_conf)
 
         if createGUI:
             self.root = tk.Tk()
@@ -77,7 +77,7 @@ class Game(object):
         # let the bot play
         if(self.current_player == pid.P2):
             state = BoardState(self.board, self.current_player)
-            move = MCTS(state, 1000, pid.P2)
+            move = self.agent.get_move(state)
             store = self.board.get_store(move)
             self.act(store)
             
