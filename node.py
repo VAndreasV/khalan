@@ -1,11 +1,5 @@
 import math
 
-class NodeConfig(object):
-    def __init__(self, UCBC, RAVEK, BETAK):
-        self.UCBC = UCBC
-        self.RAVEK = RAVEK
-        self.BETAK = BETAK
-
 class Node(object):
     def __init__(self, state, conf, move=None, parent=None, player=None):
         '''

@@ -1,4 +1,4 @@
-from node import Node, NodeConfig
+from node import Node
 import math
 from board import HOUSES
 import numpy as np

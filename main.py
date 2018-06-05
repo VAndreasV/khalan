@@ -4,21 +4,6 @@ import agents as a
 from player import PlayerID as pid
 import plotting as p
 from conf import *
-
-def get_agent_tag(agent_type, max_steps, c, k):
-    if agent_type == 'rnd':
-        return agent_type
-    elif agent_type == 'mcts':
-        return '{}-{}-c{}'.format(agent_type, max_steps, c)
-    elif agent_type == 'rave':
-        return '{}-{}-k{}'.format(agent_type, max_steps, k)
-    elif agent_type == 'ucrave':
-        return '{}-{}-c{}-k{}'.format(agent_type, max_steps, c, k)
-    elif agent_type == 'mcts_cont':
-        return '{}-{}-c{}'.format(agent_type, max_steps, c)
-    else:
-        assert(False)
-        return 'ERROR'
     
 
 def run_simulation(conf):
@@ -30,11 +15,10 @@ def run_simulation(conf):
 
     for i in range(total_games):
         simulate(agent_1, agent_2)
-    a1_tag = get_agent_tag(args.a1, args.sa1, args.UCBC1, args.RAVEK1)
-    a2_tag = get_agent_tag(args.a2, args.sa2, args.UCBC2, args.RAVEK2)
-    prefix = '../results/{}_VS_{}_g{}'.format(a1_tag, a2_tag, args.g)
+    prefix = conf.get_prefix()
     p.plot_simulation_results(agent_1, agent_2, prefix)
     p.plot_scores(agent_1, agent_2, prefix)
+    conf.log()
     print('Done')
 
 if __name__ == "__main__":

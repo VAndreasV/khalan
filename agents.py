@@ -5,36 +5,38 @@ from mcts_cont import MCTSCONT
 from node import Node
 from rave_node import RAVENode, UCRAVENode
 import random
-from conf import DEF_SIM_POL
+from rollout_policy import get_sim_pol_class
+
 
 
 def make_agent(p_id, conf):
-    node_conf = conf.get_node_conf(p_id)
-    agent_type = conf.get_agent_type(p_id)
-    max_steps = conf.get_max_steps(p_id)
-    sim_pol = conf.get_sim_pol(p_id)
+    agent_conf = conf.get_agent_conf(p_id)
+    agent_type = agent_conf.agent_type
     if agent_type == 'rnd':
-        return RandomAgent(p_id, node_conf, sim_pol)
+        return RandomAgent(agent_conf)
     elif agent_type == 'mcts':
-        return MCTSAgent(p_id, node_conf, sim_pol, max_steps)
+        return MCTSAgent(agent_conf)
     elif agent_type == 'rave':
-        return RAVEAgent(p_id, node_conf, sim_pol, max_steps)
+        return RAVEAgent(agent_conf)
     elif agent_type == 'ucrave':
-        return UCRAVEAgent(p_id, node_conf, sim_pol, max_steps)
+        return UCRAVEAgent(agent_conf)
     elif agent_type == 'mcts_cont':
-        return ContinuousMCTSAgent(p_id, node_conf, sim_pol, max_steps)
+        return ContinuousMCTSAgent(agent_conf)
     else:
         assert(False)
         return None
 
 
 class Agent():
-    def __init__(self, player_id, node_conf, sim_pol, max_steps = 0, max_time = 0):
-        self.player_id = player_id
-        self.node_conf = node_conf
-        self.sim_pol = sim_pol
-        self.max_steps = max_steps
-        self.max_time = max_time
+    def __init__(self, agent_conf):
+        self.player_id = agent_conf.player_id
+        self.node_conf = agent_conf.node_conf
+        self.sim_pol = get_sim_pol_class(agent_conf.sim_pol)
+        self.max_steps = agent_conf.max_steps
+        self.max_time = agent_conf.max_time
+        assert(self.max_time > 0 or self.max_steps > 0)
+        self.tag = agent_conf.get_tag()
+
         self.games_played = 0
         self.wins = 0
         self.scores = []
@@ -63,56 +65,37 @@ class Agent():
 
 
 class MCTSAgent(Agent):    
-    def __init__(self, player_id, node_conf, sim_pol, max_steps = 0, max_time = 0):
-        assert(max_time > 0 or max_steps > 0)
-        Agent.__init__(self, player_id, node_conf, sim_pol, max_steps, max_time)
-        tag_id = max_steps if max_steps > 0 else max_time
-        #self.tag = 'MCTS {}\nc{}'.format(tag_id, self.node_conf.UCBC)
-        self.tag = 'mcts'
-        if sim_pol != DEF_SIM_POL:
-            self.tag += '_urg'
+    def __init__(self, agent_conf):
+        Agent.__init__(self, agent_conf)
         
     def get_move(self, state):
         return MCTS(state, self.max_steps, self.player_id, self.node_conf, self.sim_pol)
 
 class RandomAgent(Agent):
-    def __init__(self, player_id, node_conf, sim_pol, max_steps = 0, max_time = 0):
-        Agent.__init__(self, player_id, node_conf, sim_pol, max_steps, max_time)
-        self.tag = 'rnd'
+    def __init__(self, agent_conf):
+        Agent.__init__(self, agent_conf)
 
     def get_move(self, state):
         return random.choice(state.get_moves())
 
 class RAVEAgent(Agent):
-    def __init__(self, player_id, node_conf, sim_pol, max_steps = 0, max_time = 0):
-        assert(max_time > 0 or max_steps > 0)
-        Agent.__init__(self, player_id, node_conf, sim_pol, max_steps, max_time)
-        tag_id = max_steps if max_steps > 0 else max_time
-        #self.tag = 'RAVE {}\nk{}'.format(tag_id, self.node_conf.RAVEK)
-        self.tag = 'rave'
+    def __init__(self,agent_conf):
+        Agent.__init__(self, agent_conf)
 
     def get_move(self, state):
         return MCRAVE(state, self.max_steps, self.player_id, RAVENode, self.node_conf, self.sim_pol)
 
 
 class UCRAVEAgent(Agent):
-    def __init__(self, player_id, node_conf, sim_pol, max_steps = 0, max_time = 0):
-        assert(max_time > 0 or max_steps > 0)
-        Agent.__init__(self, player_id, node_conf, sim_pol, max_steps, max_time)
-        tag_id = max_steps if max_steps > 0 else max_time
-        #self.tag = 'ucrave {}\nc{} k{}'.format(tag_id, self.node_conf.UCBC, self.node_conf.RAVEK)
-        self.tag = 'ucrave'
+    def __init__(self, agent_conf):
+        Agent.__init__(self, agent_conf)
 
     def get_move(self, state):
         return MCRAVE(state, self.max_steps, self.player_id, UCRAVENode, self.node_conf, self.sim_pol)
 
 class ContinuousMCTSAgent(Agent):
-    def __init__(self, player_id, node_conf, sim_pol, max_steps = 0, max_time = 0):
-        assert(max_time > 0 or max_steps > 0)
-        Agent.__init__(self, player_id, node_conf, sim_pol, max_steps, max_time)
-        tag_id = max_steps if max_steps > 0 else max_time
-        #self.tag = 'mcts_cont {}\nc{}'.format(tag_id, self.node_conf.UCBC)
-        self.tag = 'mcts_cont'
+    def __init__(self, agent_conf):
+        Agent.__init__(self, agent_conf)
         self.prev_root = None
 
     def get_move(self, state):
