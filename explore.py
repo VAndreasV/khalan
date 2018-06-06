@@ -73,11 +73,15 @@ if __name__ == "__main__":
                         help="Staregy of the opponent, with constant parameters.\n[rnd, mcts, rave, ucrave]")
 
     args = parser.parse_args()
-    assert(args.p1_strategy != 'rnd')
+
+    print('Parameter exploration is broken, early return.')
+    return 0
+
+    '''assert(args.p1_strategy != 'rnd')
 
     if args.p == 'k':
         explore_k(args)
     elif args.p == 'c':
         explore_c(args)
     else:
-        assert(False)
+        assert(False)'''

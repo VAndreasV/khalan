@@ -1,7 +1,3 @@
-'''
-Simplified version of the boardstate,
-used for MCTS
-'''
 import player as p
 from board import HOUSES, INIT_STONES
 import numpy as np
@@ -27,6 +23,12 @@ def get_base_id(player_id):
     return HOUSES if player_id == p.PlayerID.P1 else HOUSES*2 + 1
 
 class BoardState():
+    '''
+    One state of the game
+    Contains info on:
+        - the board
+        - current and previous player
+    '''
     def __init__(self, board, next_player):
         self.next_player = next_player
         self.prev_player = None

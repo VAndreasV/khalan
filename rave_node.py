@@ -14,27 +14,11 @@ class RAVENode(Node):
     def get_beta(self, child):
         return math.sqrt(self.conf.BETAK / (self.conf.BETAK + 3*child.visits))
 
-    '''def get_wins_per_branch(self, current_node, move):
-        if current_node.move == move:
-            return get_leaf_results(current_node)
-        wins = 0
-        branches = 0
-        for c in current_node.children:
-            w, b = self.get_wins_per_branch(c, move)
-            wins += w
-            branches += b
-        return wins, branches'''
-
     def get_key(self, c):
         move = c.move
         amaf_wins = self.amaf_wins[move]
         amaf_count = self.amaf_counts[move]
-        '''amaf_wins = 0
-        amaf_count = 0
-        for child in c.parent.children:
-            wins, count = self.get_wins_per_branch(child, move)
-            amaf_wins += wins
-            amaf_count += count'''
+
         q = c.wins / c.visits
         q_rave = amaf_wins / amaf_count
         beta = self.get_beta(c)
@@ -71,17 +55,3 @@ class UCRAVENode(RAVENode):
         self.untriedMoves.remove(move)
         self.children.append(n)
         return n
-
-'''
-def get_leaf_results(node):
-    if node.children == []:
-        return min(node.wins, 1), 1
-    else:
-        result = 0
-        leafs = 0
-        for c in node.children:
-            r, l = get_leaf_results(c)
-            result += r
-            leafs += l
-        return result, leafs
-'''

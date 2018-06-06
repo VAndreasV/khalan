@@ -7,6 +7,9 @@ STORE_WIDTH = 1
 STORE_HEIGHT = 1
 
 class StoreGUI(object):
+    '''
+    GUI wrapper for the board
+    '''
     def __init__(self, frame, game, store, row_pos, col_pos):
         self.store = store
         self.button = tk.Button(frame, 
